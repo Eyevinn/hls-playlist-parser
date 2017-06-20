@@ -4,7 +4,6 @@ const classes =  require("./tagClasses.js");
 
 class HlsParser {
   constructor(inputFile, outputFile, testMode = false) {
-    console.log("const");
     this.inputFile = inputFile;
     this.testMode = testMode;
     this.outputFile = outputFile;
@@ -13,17 +12,14 @@ class HlsParser {
     return new Promise((resolve, reject) => {
       fs.readFile(this.inputFile, "utf-8", (err, data) => {
         if(err){
-          console.log("err");
-          reject()
+          reject(err)
         }
         this.proccessFile(data);
-        console.log("before res");
         resolve(data)
       })
     })
   }
   proccessFile(data) {
-    console.log("proccessFile");
     const items = data.split("#").slice(1);
     this.manifest = new Manifest(data, this.outputFile);
     this.getTagType(items, this.manifest.manifest);
