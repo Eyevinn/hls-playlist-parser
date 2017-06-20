@@ -1,145 +1,92 @@
-const fs = require("fs");
+const fs = require("fs-extra");
+const util = require("./util/util.js")
 const classes =  require("./tagClasses.js");
 
 class HlsParser {
-  constructor() {
-    this.validator = new TagValidator();
-    this.testMode = true;
+  constructor(inputFile, outputFile, testMode = false) {
+    console.log("const");
+    this.inputFile = inputFile;
+    this.testMode = testMode;
+    this.outputFile = outputFile;
   }
-  readFile(file) {
-    fs.readFile(file, "utf-8", (err, data) => {
-      if(err){
-        throw err
-      }
-      this.proccessFile(data);
+  readFile() {
+    return new Promise((resolve, reject) => {
+      fs.readFile(this.inputFile, "utf-8", (err, data) => {
+        if(err){
+          console.log("err");
+          reject()
+        }
+        this.proccessFile(data);
+        console.log("before res");
+        resolve(data)
+      })
     })
   }
   proccessFile(data) {
+    console.log("proccessFile");
     const items = data.split("#").slice(1);
-    const manifest = new Manifest(data);
-    this.getTagType(items, manifest.manifest);
-    manifest.write(this.testMode);
+    this.manifest = new Manifest(data, this.outputFile);
+    this.getTagType(items, this.manifest.manifest);
   }
   getTagType(items, saveObj) {
-    let val
-    items.forEach((item, index) => {
-      let unidentified;
-      for(const i in this.validator.methods){
-        const val = this.validator.methods[i](item, saveObj);
-        if(val){
+    items.forEach((item) => {
+      let unidentified = true;
+      for(let i in classes){
+        if(classes[i].prototype.validator(item)){
+          saveObj.push(new classes[i](item, item));
           unidentified = false;
           break;
-        }else{
-          unidentified = true;
         }
       }
       if(unidentified){
-        saveObj.push(new classes.UnidentifiedTag("test", item))
+        saveObj.push(new classes.UnidentifiedTag(item, item));
       }
-    })
-    return val
-  }
-}
-
-class TagValidator {
-  constructor() {
-    this.methods = {
-      extInf:(tag, saveObj) => {
-        if(tag.match("EXTINF")){
-            saveObj.push(new classes.EXTINF("EXTINF", tag));
-            return "EXTINF";
-        }
-        return false;
-      },
-      extDaterange: (tag, saveObj) => {
-        if(tag.match("EXT-X-DATERANGE")){
-            saveObj.push(new classes.EXTXDATERANGE("EXT-X-DATERANGE", tag));
-            return "EXT-X-DATERANGE";
-        }
-        return false;
-      },
-      extTargetduration: (tag, saveObj) => {
-        if(tag.match("EXT-X-TARGETDURATION")){
-            saveObj.push(new classes.EXTTARGETDURATION("EXT-X-TARGETDURATION", tag));
-            return "EXT-X-TARGETDURATION";
-        }
-        return false;
-      },
-      extm3u: (tag, saveObj) => {
-        if(tag.match("EXTM3U")){
-            saveObj.push(new classes.EXTM3U("EXTM3U", tag));
-            return "EXTM3U";
-        }
-        return false;
-      },
-      extVersion: (tag, saveObj) => {
-        if(tag.match("EXT-X-VERSION")){
-            saveObj.push(new classes.EXTXVERSION("EXT-X-VERSION", tag));
-            return "EXT-X-VERSION";
-        }
-        return false;
-      },
-      extEndList: (tag, saveObj) => {
-        if(tag.match("EXT-X-ENDLIST")){
-            saveObj.push(new classes.EXTENDLIST("EXT-X-ENDLIST", tag));
-            return "EXT-X-ENDLIST";
-        }
-        return false;
-      },
-      extMediaSequence: (tag, saveObj) => {
-        if(tag.match("EXT-X-MEDIA-SEQUENCE")){
-            saveObj.push(new classes.EXTMEDIASEQUENCE("EXT-X-MEDIA-SEQUENCE", tag));
-            return "EXT-X-MEDIA-SEQUENCE";
-        }
-        return false;
-      },
-    }
+    });
   }
 }
 
 class Manifest {
-  constructor(originalManifest) {
+  constructor(originalManifest, outputFile = "./out.m3u8") {
     this.originalManifest = originalManifest;
     this.manifest = [];
+    this.outputFile = outputFile;
   }
-
   test(writtenManifest) {
-    console.log("writtenManifest: ", writtenManifest);
-    console.log("originalManifest: ", this.originalManifest);
     return writtenManifest === this.originalManifest; //
   }
-
   write(test) {
+
     let writtenManifest = "";
     this.manifest.forEach((item, index) => {
       const line = item.print();
       writtenManifest += line;
     });
-
     test ? console.log(this.test(writtenManifest)) : null;
-    fs.writeFile("out.m3u8", writtenManifest)
+    fs.writeFile(this.outputFile, writtenManifest)
     return writtenManifest;
   }
-
-  getSegmentTags() {
-    let segmentTags = [];
-    this.manifest.forEach((item) => {
-      item.getType() === "SegmentTag" ? segmentTags.push(item) : null;
+  getSegmentsToReplace() {
+    const segmentsToReplace = [];
+    let cueOut, cueIn;
+    this.manifest.forEach((item, index) => {
+      if(item instanceof classes.EXTXDATERANGE && item.value[" SCTE35-OUT"]){
+        cueOut = true;
+        cueIn = false;
+      }else if (item instanceof classes.EXTXDATERANGE && item.value[" SCTE35-IN"]) {
+        cueIn = true;
+        cueOut = false;
+      }
+      if(cueOut && item instanceof classes.EXTINF){
+        segmentsToReplace.push({segment: item, index: index});
+      }
     })
-    return segmentTags;
-  }
-  getPlaylistTags() {
-    let playListTags = [];
-    this.manifest.forEach((item) => {
-      item.getType() === "PlaylistTag" ? playListTags.push(item) : null;
-    })
-    return playListTags;
+    return segmentsToReplace;
   }
 }
 
+module.exports.HlsParser = HlsParser;
 
-
-
-
-parser = new HlsParser();
-parser.readFile(process.env.file)
+const inputFile = process.env.file || "./dev_assets/index.m3u8";
+const outputFile = "./dev_assets/out.m3u8";
+const parser = new HlsParser(inputFile, outputFile, false);
+parser.readFile()

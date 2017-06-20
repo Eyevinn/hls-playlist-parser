@@ -1,16 +1,20 @@
 class Tag {
   constructor(tagType, tagData) {
-    this.tagType = tagType;
-    //this.tagData = tagData.split("\n");
     this.prefix = this.getPrefix(tagData.split("\n"));
   }
-
   getPrefix(data) {
     return data[0].split(":")[0];
   }
+  print() {
+    return `#${this.prefix}`;
+  }
+  validator(tag) {
+    console.log(this.prefix);
+    return new Boolean(tag.match(this.prefix));
+  }
 }
 
-class PlaylistTag extends Tag {
+class MediaPlaylistTag extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = tagData.split(":")[1];
@@ -22,15 +26,17 @@ class PlaylistTag extends Tag {
 
 module.exports.UnidentifiedTag = class UnidentifiedTag {
   constructor(tagType, tagData) {
-    this.type = tagType;
     this.value = tagData;
   }
   print() {
     return `#${this.value}`;
   }
+  validator() {
+    return false;
+  }
 }
 
-class SegmentTag extends Tag {
+class MediaSegmentTag extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = tagData.split(":")[1];
@@ -40,9 +46,7 @@ class SegmentTag extends Tag {
   }
 }
 
-
-
-module.exports.EXTINF = class EXTINF extends SegmentTag {
+module.exports.EXTINF = class EXTINF extends MediaSegmentTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value  = tagData.split("\n")[0].split(":")[1];
@@ -51,18 +55,24 @@ module.exports.EXTINF = class EXTINF extends SegmentTag {
   print() {
     return `#${this.prefix}:${this.value}\n${this.segmentFile}\n`
   }
+  validator(tag) {
+    return tag.match("EXTINF");
+  }
 }
 
-module.exports.EXTM3U = class EXTM3U extends PlaylistTag {
+module.exports.EXTM3U = class EXTM3U extends MediaPlaylistTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
   }
   print() {
     return `#${this.prefix}\n`;
   }
+  validator(tag) {
+    return tag.match("EXTM3U");
+  }
 }
 
-module.exports.EXTXVERSION = class EXTXVERSION extends PlaylistTag {
+module.exports.EXTXVERSION = class EXTXVERSION extends MediaPlaylistTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = parseInt(this.value);
@@ -70,9 +80,12 @@ module.exports.EXTXVERSION = class EXTXVERSION extends PlaylistTag {
   print() {
     return `#${this.prefix}:${this.value}\n`
   }
+  validator(tag) {
+    return tag.match("EXT-X-VERSION");
+  }
 }
 
-module.exports.EXTMEDIASEQUENCE = class EXTXVERSION extends PlaylistTag {
+module.exports.EXTMEDIASEQUENCE = class EXTMEDIASEQUENCE extends MediaPlaylistTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = parseInt(this.value);
@@ -80,18 +93,24 @@ module.exports.EXTMEDIASEQUENCE = class EXTXVERSION extends PlaylistTag {
   print() {
     return `#${this.prefix}:${this.value}\n`
   }
+  validator(tag) {
+    return tag.match("EXT-X-MEDIA-SEQUENCE");
+  }
 }
 
-module.exports.EXTENDLIST = class EXTXVERSION extends PlaylistTag {
+module.exports.EXTENDLIST = class EXTENDLIST extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
   }
   print() {
     return `#${this.prefix}\n`;
   }
+  validator(tag) {
+    return tag.match("EXT-X-ENDLIST");
+  }
 }
 
-module.exports.EXTTARGETDURATION = class EXTTARGETDURATION extends PlaylistTag {
+module.exports.EXTTARGETDURATION = class EXTTARGETDURATION extends MediaPlaylistTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = parseInt(this.value);
@@ -99,15 +118,18 @@ module.exports.EXTTARGETDURATION = class EXTTARGETDURATION extends PlaylistTag {
   print() {
     return `#${this.prefix}:${this.value}\n`
   }
+  validator(tag) {
+    return tag.match("EXT-X-TARGETDURATION");
+  }
 }
 
-module.exports.EXTXDATERANGE = class EXTXDATERANGE extends SegmentTag {
+module.exports.EXTXDATERANGE = class EXTXDATERANGE extends MediaSegmentTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = {};
-    this.valuePairs = tagData.split(",");
-    this.valuePairs[0] = this.valuePairs[0].split(":")[1];
-    this.valuePairs.forEach((item) => {
+    const valuePairs = tagData.split(",");
+    valuePairs[0] = valuePairs[0].split(":")[1];
+    valuePairs.forEach((item) => {
       const valuePair = item.split("=");
       this.value[valuePair[0]] = valuePair[1];
     })
@@ -118,5 +140,20 @@ module.exports.EXTXDATERANGE = class EXTXDATERANGE extends SegmentTag {
       valueString += `${key}=${this.value[key]},`
     }
     return `#${this.prefix}:${valueString.slice(0, valueString.length -2)}\n`
+  }
+  validator(tag) {
+    return tag.match("EXT-X-DATERANGE");
+  }
+}
+
+module.exports.EXTXDISCONTINUITY = class EXTXDISCONTINUITY extends Tag {
+  constructor(tagType, tagData) {
+    super(tagType, tagData)
+  }
+  print() {
+    return `#${this.prefix}`
+  }
+  validator(tag) {
+    return tag.match("EXT-X-DISCONTINUITY");
   }
 }

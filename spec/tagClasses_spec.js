@@ -1,23 +1,19 @@
-const tagClasses = require("./../tagClasses.js")
+const classes = require("./../tagClasses.js");
 const fs = require("fs");
-
+const HlsParser = require("./../hls_parser.js").HlsParser;
 
 
 describe("Classes", () => {
-  let extInfMock;
+  let parser;
   beforeEach((done) => {
-    fs.readFile("./dev_assets/index.m3u8", "utf-8", (err, data) => {
-      extInfMock = data
-      done();
-    });
+    parser = new HlsParser(false);
+    parser.readFile("./dev_assets/index.m3u8", done);
   })
-  describe("EXTINF", () => {
+  describe("readFile, create manifest object", () => {
     it("init", () => {
-      const tag = new tagClasses.EXTINF("type", extInfMock.split("#")[6]);
-      console.log(tag);
-      expect(tag.tagType).toBe("type");
-      expect(tag.segmentFile).toBe("index1.ts");
-      expect(tag.value).toBe("8.333333,");
+      expect(parser.manifest.manifest[6] instanceof classes.EXTINF).toBeTruthy();
+      expect(parser.manifest.manifest[0] instanceof classes.EXTM3U).toBeTruthy();
+      expect(parser.manifest.manifest[parser.manifest.manifest.length -1] instanceof classes.EXTENDLIST).toBeTruthy();
     })
   });
 });
