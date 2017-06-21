@@ -1,2 +1,4 @@
 node_modules
 dev_assets/*.ts
+adinserter.js
+coverage

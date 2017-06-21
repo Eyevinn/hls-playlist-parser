@@ -9,7 +9,6 @@ class Tag {
     return `#${this.prefix}`;
   }
   validator(tag) {
-    console.log(this.prefix);
     return new Boolean(tag.match(this.prefix));
   }
 }
@@ -18,9 +17,6 @@ class MediaPlaylistTag extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = tagData.split(":")[1];
-  }
-  getType() {
-    return "PlaylistTag";
   }
 }
 
@@ -40,9 +36,6 @@ class MediaSegmentTag extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = tagData.split(":")[1];
-  }
-  getType() {
-    return "SegmentTag";
   }
 }
 
@@ -85,7 +78,7 @@ module.exports.EXTXVERSION = class EXTXVERSION extends MediaPlaylistTag {
   }
 }
 
-module.exports.EXTMEDIASEQUENCE = class EXTMEDIASEQUENCE extends MediaPlaylistTag {
+module.exports.EXTXMEDIASEQUENCE = class EXTXMEDIASEQUENCE extends MediaPlaylistTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = parseInt(this.value);
@@ -98,7 +91,7 @@ module.exports.EXTMEDIASEQUENCE = class EXTMEDIASEQUENCE extends MediaPlaylistTa
   }
 }
 
-module.exports.EXTENDLIST = class EXTENDLIST extends Tag {
+module.exports.EXTXENDLIST = class EXTXENDLIST extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
   }
@@ -110,7 +103,7 @@ module.exports.EXTENDLIST = class EXTENDLIST extends Tag {
   }
 }
 
-module.exports.EXTTARGETDURATION = class EXTTARGETDURATION extends MediaPlaylistTag {
+module.exports.EXTXTARGETDURATION = class EXTXTARGETDURATION extends MediaPlaylistTag {
   constructor(tagType, tagData) {
     super(tagType, tagData);
     this.value = parseInt(this.value);
@@ -151,7 +144,7 @@ module.exports.EXTXDISCONTINUITY = class EXTXDISCONTINUITY extends Tag {
     super(tagType, tagData)
   }
   print() {
-    return `#${this.prefix}`
+    return `#${this.prefix}\n`;
   }
   validator(tag) {
     return tag.match("EXT-X-DISCONTINUITY");

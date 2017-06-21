@@ -1,5 +1,4 @@
 const fs = require("fs-extra");
-const util = require("./util/util.js")
 const classes =  require("./tagClasses.js");
 
 class HlsParser {
@@ -53,16 +52,20 @@ class Manifest {
   test(writtenManifest) {
     return writtenManifest === this.originalManifest; //
   }
-  write(test) {
-
+  write() {
     let writtenManifest = "";
     this.tags.forEach((item, index) => {
       const line = item.print();
       writtenManifest += line;
     });
-    test ? console.log(this.test(writtenManifest)) : null;
-    fs.writeFile(this.outputFile, writtenManifest)
     return writtenManifest;
+  }
+  writeToFile() {
+
+    fs.writeFile(this.outputFile, this.write()).
+    then(() => {
+      console.log("file written");
+    })
   }
   getSegmentsToReplace() {
     const segmentsToReplace = [];
@@ -95,6 +98,6 @@ const inputFile = process.env.file || "./dev_assets/index.m3u8";
 const outputFile = "./dev_assets/out.m3u8";
 const parser = new HlsParser(inputFile, outputFile, false);
 parser.readFile().then(() => {
-  console.log(parser.getSupportedTags());
-  console.log(parser.manifest);
+  //console.log(parser.getSupportedTags());
+  //console.log(parser.manifest);
 });

@@ -1,19 +1,19 @@
 {
-  "name": "hls-parser",
+  "name": "hls-playlist-parser",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine"
+    "test": "istanbul cover node_modules/jasmine/bin/jasmine.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
+    "istanbul": "^0.4.5",
     "jasmine": "^2.6.0"
   },
   "dependencies": {
     "fs-extra": "^3.0.1",
-    "server-static": "^2.0.5",
-    "text-diff": "^1.0.1"
+    "server-static": "^2.0.5"
   }
 }
