@@ -139,6 +139,61 @@ module.exports.EXTXDATERANGE = class EXTXDATERANGE extends MediaSegmentTag {
   }
 }
 
+module.exports.EXTXKEY = class EXTXKEY extends MediaSegmentTag {
+  constructor(tagType, tagData) {
+    super(tagType, tagData);
+    this.value = {};
+    const valuePairs = tagData.split(",");
+    valuePairs[0] = valuePairs[0].split(":")[1];
+    valuePairs.forEach((item) => {
+      if(item.split("=")[0] === "URI") {
+        this.value["URI"] = item.split("URI=")[1];
+      }else{
+        const valuePair = item.split("=");
+        this.value[valuePair[0]] = valuePair[1];
+      }
+    })
+  }
+  print() {
+    let valueString = "";
+    for(const key in this.value) {
+      valueString += `${key}=${this.value[key]},`
+    }
+    return `#${this.prefix}:${valueString.slice(0, valueString.length -2)}\n`
+  }
+  validator(tag) {
+    return tag.match("EXT-X-KEY");
+  }
+}
+
+module.exports.EXTXMAP = class EXTXMAP extends MediaSegmentTag {
+  constructor(tagType, tagData) {
+    super(tagType, tagData);
+    this.value = {};
+    const valuePairs = tagData.split(",");
+    valuePairs[0] = valuePairs[0].split(":")[1];
+    valuePairs.forEach((item) => {
+      if(item.split("=")[0] === "URI") {
+        this.value["URI"] = item.split("URI=")[1];
+      }else{
+        const valuePair = item.split("=");
+        this.value[valuePair[0]] = valuePair[1];
+      }
+    })
+  }
+  print() {
+    let valueString = "";
+    for(const key in this.value) {
+      valueString += `${key}=${this.value[key]},`
+    }
+    return `#${this.prefix}:${valueString.slice(0, valueString.length -2)}\n`
+  }
+  validator(tag) {
+    return tag.match("EXT-X-MAP");
+  }
+}
+
+
 module.exports.EXTXDISCONTINUITY = class EXTXDISCONTINUITY extends Tag {
   constructor(tagType, tagData) {
     super(tagType, tagData)

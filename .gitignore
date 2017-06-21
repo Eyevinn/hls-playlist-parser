@@ -1,4 +1,4 @@
 node_modules
-dev_assets/*.ts
+dev_assets
 adinserter.js
 coverage

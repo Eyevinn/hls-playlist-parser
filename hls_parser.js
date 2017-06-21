@@ -5,7 +5,7 @@ class HlsParser {
   constructor(inputFile, outputFile, testMode = false) {
     this.inputFile = inputFile;
     this.testMode = testMode;
-    this.outputFile = outputFile;
+    this.outputFile = outputFile || "./out.m3u8";
   }
   readFile() {
     return new Promise((resolve, reject) => {
@@ -44,13 +44,13 @@ class HlsParser {
 }
 
 class Manifest {
-  constructor(originalManifest, outputFile = "./out.m3u8") {
+  constructor(originalManifest, outputFile) {
     this.originalManifest = originalManifest;
     this.tags = [];
     this.outputFile = outputFile;
   }
-  test(writtenManifest) {
-    return writtenManifest === this.originalManifest; //
+  test() {
+    return this.write() === this.originalManifest; //
   }
   write() {
     let writtenManifest = "";
@@ -67,11 +67,13 @@ class Manifest {
       console.log("file written");
     })
   }
-  getSegmentsToReplace() {
+  getSegmentsInsideDateRange() {
     const segmentsToReplace = [];
+    let sectionList = [];
     let cueOut, cueIn;
     this.tags.forEach((item, index) => {
       if(item instanceof classes.EXTXDATERANGE && item.value[" SCTE35-OUT"]){
+        sectionList.push(item.value[" PLANNED-DURATION"])
         cueOut = true;
         cueIn = false;
       }else if (item instanceof classes.EXTXDATERANGE && item.value[" SCTE35-IN"]) {
@@ -79,7 +81,11 @@ class Manifest {
         cueOut = false;
       }
       if(cueOut && item instanceof classes.EXTINF){
-        segmentsToReplace.push({segment: item, index: index});
+        sectionList.push({segment: item, index: index});
+      }else if (cueIn) {
+        cueIn = null;
+        segmentsToReplace.push(sectionList);
+        sectionList = [];
       }
     })
     return segmentsToReplace;
@@ -94,10 +100,7 @@ class Manifest {
 
 module.exports.HlsParser = HlsParser;
 
-const inputFile = process.env.file || "./dev_assets/index.m3u8";
-const outputFile = "./dev_assets/out.m3u8";
-const parser = new HlsParser(inputFile, outputFile, false);
+/*const parser = new HlsParser("./dev_assets/index.m3u8", "./dev_assets/out.m3u8", false);
 parser.readFile().then(() => {
-  //console.log(parser.getSupportedTags());
-  //console.log(parser.manifest);
-});
+  console.log(parser.manifest.getSegmentsInsideDateRange());
+})*/
