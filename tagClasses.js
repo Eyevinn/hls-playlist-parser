@@ -205,3 +205,15 @@ module.exports.EXTXDISCONTINUITY = class EXTXDISCONTINUITY extends Tag {
     return tag.match("EXT-X-DISCONTINUITY");
   }
 }
+
+module.exports.EXTXBYTERANGE = class EXTXBYTERANGE extends MediaPlaylistTag {
+  constructor(tagType, tagData) {
+    super(tagType, tagData)
+  }
+  print() {
+    return `#${this.prefix}:${this.value}\n`;
+  }
+  validator(tag) {
+    return tag.match("EXT-X-DISCONTINUITY");
+  }
+}

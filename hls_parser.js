@@ -102,5 +102,5 @@ module.exports.HlsParser = HlsParser;
 
 /*const parser = new HlsParser("./dev_assets/index.m3u8", "./dev_assets/out.m3u8", false);
 parser.readFile().then(() => {
-  console.log(parser.manifest.getSegmentsInsideDateRange());
+  console.log(parser.manifest.tags);
 })*/
