@@ -49,7 +49,11 @@ module.exports.EXTINF = class EXTINF extends MediaSegmentTag {
     return `#${this.prefix}:${this.value}\n${this.segmentFile}\n`
   }
   validator(tag) {
-    return tag.match("EXTINF");
+    if(tag.match("EXTINF") && tag.split(",")[1] === "\n"){
+      return "BYTE";
+    } else {
+      return tag.match("EXTINF");
+    }
   }
 }
 
@@ -207,11 +211,13 @@ module.exports.EXTXDISCONTINUITY = class EXTXDISCONTINUITY extends Tag {
 }
 
 module.exports.EXTXBYTERANGE = class EXTXBYTERANGE extends MediaPlaylistTag {
-  constructor(tagType, tagData) {
+  constructor(tagType, tagData, byteRangeData) {
     super(tagType, tagData)
+    this.byteRangeData = byteRangeData;
+    console.log(this.print());
   }
   print() {
-    return `#${this.prefix}:${this.value}\n`;
+    return `#${this.prefix}:${this.value}${this.byteRangeData}`;
   }
   validator(tag) {
     return tag.match("EXT-X-DISCONTINUITY");

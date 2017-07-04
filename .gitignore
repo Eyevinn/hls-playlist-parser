@@ -2,3 +2,4 @@ node_modules
 dev_assets
 adinserter.js
 coverage
+test.js

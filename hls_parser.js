@@ -7,9 +7,10 @@ class HlsParser {
     this.testMode = testMode;
     this.outputFile = outputFile || "./out.m3u8";
   }
-  readFile() {
+  readFile(file) {
     return new Promise((resolve, reject) => {
-      fs.readFile(this.inputFile, "utf-8", (err, data) => {
+      const fileToRead = this.inputFile || file;
+      fs.readFile(fileToRead, "utf-8", (err, data) => {
         if(err){
           reject(err)
         }
@@ -24,10 +25,14 @@ class HlsParser {
     this.getTagType(items, this.manifest.tags);
   }
   getTagType(items, saveObj) {
-    items.forEach((item) => {
+    items.forEach((item, index) => {
       let unidentified = true;
+
       for(let i in classes){
-        if(classes[i].prototype.validator(item)){
+        if(classes[i].prototype.validator(item) === "BYTE"){
+          saveObj.push(new classes.EXTXBYTERANGE(items[index + 1], item, items[index + 1]))
+        }
+        else if(classes[i].prototype.validator(item)){
           saveObj.push(new classes[i](item, item));
           unidentified = false;
           break;
@@ -61,10 +66,10 @@ class Manifest {
     return writtenManifest;
   }
   writeToFile() {
-
+    const fileToWrite = this.outputFile || "out.m3u8";
     fs.writeFile(this.outputFile, this.write()).
-    then(() => {
-      console.log("file written");
+    then((err) => {
+      //console.log(err);
     })
   }
   getSegmentsInsideDateRange() {
