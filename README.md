@@ -1,4 +1,4 @@
-A Javascript library to parse Hls playlists
+A Javascript library to parse and edit Hls playlists. Based on specification https://tools.ietf.org/html/draft-pantos-http-live-streaming-23
 
 ## Usage (Node JS)
 
@@ -7,7 +7,7 @@ npm install --save hls-playlist-parser
 ```
 
 The library creates a programatically editable Object from the manifest. Supported tags are editable. Unsupported
-or unidentified tag are preserved but not editable.
+or unidentified tag are preserved but not editable. May be used to replace segments in server side ad-insertion.
 
 ```
 const HlsParser = require('hls-playlist-parser').HlsParser
@@ -29,8 +29,8 @@ parser.readFile()
 *   EXT-X-TARGETDURATION
 *   EXT-X-MEDIA-SEQUENCE
 *   EXT-X-ENDLIST
+*   EXT-X-BYTERANGE
 
-Most tags will be supported but not properly parsed. EXT-X-BYTERANGE is not yet supported
 
 ## Contributing
 All contributions are welcome but before you submit a Pull Request make sure you follow the same

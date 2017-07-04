@@ -30,7 +30,13 @@ class HlsParser {
 
       for(let i in classes){
         if(classes[i].prototype.validator(item) === "BYTE"){
-          saveObj.push(new classes.EXTXBYTERANGE(items[index + 1], item, items[index + 1]))
+          // TODO this is not a pretty solution
+          saveObj.push(new classes.EXTXBYTERANGE(items[index + 1], item, items[index + 1]));
+          unidentified = false;
+          break;
+        }else if (classes[i].prototype.validator(item) === "BYTERANGETAG") {
+          unidentified = false;
+          break;
         }
         else if(classes[i].prototype.validator(item)){
           saveObj.push(new classes[i](item, item));
@@ -104,8 +110,3 @@ class Manifest {
 }
 
 module.exports.HlsParser = HlsParser;
-
-/*const parser = new HlsParser("./dev_assets/index.m3u8", "./dev_assets/out.m3u8", false);
-parser.readFile().then(() => {
-  console.log(parser.manifest.tags);
-})*/
