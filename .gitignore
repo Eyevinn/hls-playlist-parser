@@ -3,3 +3,4 @@ dev_assets
 adinserter.js
 coverage
 test.js
+*.m3u8
